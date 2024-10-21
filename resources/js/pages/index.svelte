@@ -1,4 +1,6 @@
 <script lang="ts">
+  import RootLayout from "../layouts/root.svelte";
+  export const layout = RootLayout;
   export let text;
 </script>
 
