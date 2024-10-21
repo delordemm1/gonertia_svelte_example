@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -17,10 +18,21 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/home", i.Middleware(homeHandler(i)))
+	mux.Handle("/", i.Middleware(indexHandler(i)))
 	mux.Handle("/build/", http.StripPrefix("/build/", http.FileServer(http.Dir("./public/build"))))
 
-	http.ListenAndServe(":3000", mux)
+	// var fileServer http.Handler
+	// if a.debug {
+	// 	fileServer = http.FileServer(http.Dir("./static/"))
+	// } else {
+	// 	staticFS := http.FS(static.Static)
+	// 	fileServer = http.FileServer(staticFS)
+	// }
+	// mux.Handle("/build/", fileServer)
+	// mux.Handle("/assets/", fileServer)
+	// mux.Handle("/favicon.ico", fileServer)
+
+	http.ListenAndServe(":3010", mux)
 }
 
 func initInertia() *inertia.Inertia {
@@ -30,6 +42,7 @@ func initInertia() *inertia.Inertia {
 	// check if vite is running in dev mode (it puts a "hot" file in the public folder)
 	_, err := os.Stat(viteHotFile)
 	if err == nil {
+		slog.Info("Vite is running in dev mode")
 		i, err := inertia.NewFromFile(
 			rootViewFile,
 			inertia.WithSSR(),
@@ -112,9 +125,9 @@ func vite(manifestPath, buildDir string) func(path string) (string, error) {
 	}
 }
 
-func homeHandler(i *inertia.Inertia) http.Handler {
+func indexHandler(i *inertia.Inertia) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		err := i.Render(w, r, "Home/Index", inertia.Props{
+		err := i.Render(w, r, "index", inertia.Props{
 			"text": "Inertia.js with Svelte and Go! 💙",
 		})
 
